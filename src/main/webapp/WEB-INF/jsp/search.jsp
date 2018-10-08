@@ -48,6 +48,7 @@ function renderSearchResults()
 	else
 	{
 		$("#mySearchResults").html("Search returned 0 results. Please try a different search.");
+		alert("Please try a different search.");
 	}
 }	
 var activeSort = "title";
@@ -56,7 +57,7 @@ function sortTitle(){
 	//alert("title sorting called");
 	if(searchResults == null)
 		{
-		alert("nothing to sort");
+		//alert("nothing to sort");
 		}
 	else
 	{
@@ -95,7 +96,7 @@ function sortAuthor(){
 	//alert("author sorting called");
 	if(searchResults == null)
 		{
-		alert("nothing to sort");
+		//alert("nothing to sort");
 		}
 	else
 	{

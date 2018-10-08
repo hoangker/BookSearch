@@ -1,10 +1,6 @@
 package com.tin.controller;
 
-
-
-import java.util.ArrayList;
-import java.util.List;
-
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-
-import com.tin.model.Book;
 import com.tin.model.Search;
 import com.tin.model.SearchResult;
 import com.tin.service.BookServiceImpl;
@@ -27,15 +21,19 @@ import com.tin.service.BookServiceImpl;
 
 public class SearchController {
 
+	private final Logger logger = Logger.getLogger(SearchController.class);
+	
 	@Autowired
 	private BookServiceImpl bookService;
 	
 	@RequestMapping(value = "search", method = RequestMethod.GET)
 	public String addSearch(Model model) {
+		logger.debug("debug - search loaded.");
 		Search search = new Search();
 		SearchResult results = new SearchResult();
 		search.setTitle("");
 		model.addAttribute("search", search);
+		logger.debug("debug - adding attribute search");
 		results.setSortBy("title");
 		results.setSortOrder("ASC");
 		model.addAttribute("results", results);
@@ -43,21 +41,18 @@ public class SearchController {
 	}
 	
 	@RequestMapping(value = "search", method = RequestMethod.POST)
-	public @ResponseBody String updateSearch(@ModelAttribute("results") SearchResult results, 
+	public @ResponseBody String updateSearch(@ModelAttribute("results") SearchResult results,
 			  @ModelAttribute("search") Search search, 
 			  @RequestParam String query, @RequestParam int pageNumber, 
 			  @RequestParam String sortBy, @RequestParam String sortOrder, 
 			  Model model) 
 	{
-		//SearchResult results = new SearchResult();
-		System.out.println("sortBy:"+sortBy+";sortOrder:"+sortOrder);
+		logger.debug("debug - searching for book...");
+		logger.debug("debug - parameters: \"sortBy:"+sortBy+";sortOrder:"+sortOrder);
 		search.setTitle(query);
-		results.setSortBy(sortBy);
-		results.setSortOrder(sortOrder);
-		
 		String json =  bookService.getBookListJSON(query, pageNumber, results);
-		System.out.println("totalNumberOfPages:"+results.getTotalNumberOfPages());
-		model.addAttribute("results", results);
+		/*System.out.println("totalNumberOfPages:"+results.getTotalNumberOfPages());
+		model.addAttribute("results", results);*/
 		return json;
 	}
 	
@@ -82,13 +77,12 @@ public class SearchController {
 											  Model model)
 	{
 		//SearchResult results = new SearchResult();
-		System.out.println("sortBy:"+sortBy+";sortOrder:"+sortOrder);
+		logger.debug(" debug - Getting Good Reads Data...");
 		search.setTitle(query);
 		results.setSortBy(sortBy);
 		results.setSortOrder(sortOrder);
 		
 		String json =  bookService.getBookListJSON(query, pageNumber, results);
-		System.out.println("totalNumberOfPages:"+results.getTotalNumberOfPages());
 		model.addAttribute("results", results);
 		return json;
 	}
@@ -99,10 +93,10 @@ public class SearchController {
 		SearchResult results = new SearchResult();
 		
 		String json =  bookService.getBookListJSON(query, 1, results);
-		System.out.println("totalNumberOfPages:"+results.getTotalNumberOfPages());
+		logger.debug(" debug - Getting TotalNumberOfPages ( "+results.getTotalNumberOfPages()+")");
+		logger.debug(" debug - Getting Total # of Books ( "+results.getTotalResults()+")");
 		
-		//return new String(results.getTotalNumberOfPages());
-		return "30";
+		return Integer.toString(results.getTotalNumberOfPages());
 	}
 	
 }
