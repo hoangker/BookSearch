@@ -23,7 +23,8 @@ import com.tin.service.BookServiceImpl;
 
 
 @Controller
-@SessionAttributes({"search"})
+@SessionAttributes({"search","results"})
+
 public class SearchController {
 
 	@Autowired
@@ -32,17 +33,32 @@ public class SearchController {
 	@RequestMapping(value = "search", method = RequestMethod.GET)
 	public String addSearch(Model model) {
 		Search search = new Search();
+		SearchResult results = new SearchResult();
 		search.setTitle("");
 		model.addAttribute("search", search);
-		
+		results.setSortBy("title");
+		results.setSortOrder("ASC");
+		model.addAttribute("results", results);
 		return "search";
 	}
 	
 	@RequestMapping(value = "search", method = RequestMethod.POST)
-	public String updateSearch(@ModelAttribute("search") Search search) 
+	public @ResponseBody String updateSearch(@ModelAttribute("results") SearchResult results, 
+			  @ModelAttribute("search") Search search, 
+			  @RequestParam String query, @RequestParam int pageNumber, 
+			  @RequestParam String sortBy, @RequestParam String sortOrder, 
+			  Model model) 
 	{
-		System.out.println("Search for book:" + search.getTitle());
-		return "redirect: results.html";
+		//SearchResult results = new SearchResult();
+		System.out.println("sortBy:"+sortBy+";sortOrder:"+sortOrder);
+		search.setTitle(query);
+		results.setSortBy(sortBy);
+		results.setSortOrder(sortOrder);
+		
+		String json =  bookService.getBookListJSON(query, pageNumber, results);
+		System.out.println("totalNumberOfPages:"+results.getTotalNumberOfPages());
+		model.addAttribute("results", results);
+		return json;
 	}
 	
 	@RequestMapping(value = "results", method = RequestMethod.GET)
@@ -59,14 +75,34 @@ public class SearchController {
 	}
 	
 	@RequestMapping(value = "results", method = RequestMethod.POST)
-	public @ResponseBody String updateResults(@ModelAttribute("results") SearchResult results, @RequestParam String query, @RequestParam int pageNumber, @RequestParam String sortBy, @RequestParam String sortOrder, Model model)
+	public @ResponseBody String updateResults(@ModelAttribute("results") SearchResult results, 
+											  @ModelAttribute("search") Search search, 
+											  @RequestParam String query, @RequestParam int pageNumber, 
+											  @RequestParam String sortBy, @RequestParam String sortOrder, 
+											  Model model)
 	{
 		//SearchResult results = new SearchResult();
 		System.out.println("sortBy:"+sortBy+";sortOrder:"+sortOrder);
+		search.setTitle(query);
 		results.setSortBy(sortBy);
 		results.setSortOrder(sortOrder);
+		
+		String json =  bookService.getBookListJSON(query, pageNumber, results);
+		System.out.println("totalNumberOfPages:"+results.getTotalNumberOfPages());
 		model.addAttribute("results", results);
-		return bookService.getBookListJSON(query, pageNumber, results);
+		return json;
+	}
+	
+	@RequestMapping(value = "numberOfPages", method = RequestMethod.GET)
+	public @ResponseBody String getNumberOfPages(@RequestParam String query)
+	{
+		SearchResult results = new SearchResult();
+		
+		String json =  bookService.getBookListJSON(query, 1, results);
+		System.out.println("totalNumberOfPages:"+results.getTotalNumberOfPages());
+		
+		//return new String(results.getTotalNumberOfPages());
+		return "30";
 	}
 	
 }
